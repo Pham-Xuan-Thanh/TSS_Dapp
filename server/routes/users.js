@@ -3,6 +3,7 @@ const router = express.Router();
 const { User } = require("../models/User");
 
 const { auth } = require("../middleware/auth");
+const API = require("../middleware/api")
 
 //=================================
 //             User
@@ -21,14 +22,17 @@ router.get("/auth", auth, (req, res) => {
     });
 });
 
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
 
-    const user = new User(req.body);
-
+    var userInit = req.body
+    await API.get(`/api/user/wallet`)
+        .then((response) => { const wallet = response.data.data ; userInit= {... userInit,wallet}})
+        .catch( (err) => {console.log(err)})
+    const user = new User(userInit);
     user.save((err, doc) => {
         if (err) return res.json({ success: false, err });
         return res.status(200).json({
-            success: true
+            success: true,
         });
     });
 });
@@ -52,7 +56,7 @@ router.post("/login", (req, res) => {
                     .cookie("w_auth", user.token)
                     .status(200)
                     .json({
-                        loginSuccess: true, userId: user._id
+                        loginSuccess: true, userId: user._id , address : user.wallet.address
                     });
             });
         });

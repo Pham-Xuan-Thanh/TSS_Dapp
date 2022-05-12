@@ -9,7 +9,7 @@ import { USER_SERVER } from '../components/Config.js';
 
 export function registerUser(dataToSubmit){
     const request = axios.post(`${USER_SERVER}/register`,dataToSubmit)
-        .then(response => response.data);
+        .then((response) => {console.log(response); return response.data});
     
     return {
         type: REGISTER_USER,
@@ -19,7 +19,8 @@ export function registerUser(dataToSubmit){
 
 export function loginUser(dataToSubmit){
     const request = axios.post(`${USER_SERVER}/login`,dataToSubmit)
-                .then(response => response.data);
+                // .then(response => response.data);
+                .then((response) => {console.log(response); return response.data})
 
     return {
         type: LOGIN_USER,

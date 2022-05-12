@@ -5,9 +5,10 @@ const cors = require('cors')
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const dotenv = require("dotenv")
+dotenv.config()
 
 const config = require("./config/key");
-
 // const mongoose = require("mongoose");
 // mongoose
 //   .connect(config.mongoURI, { useNewUrlParser: true })
@@ -15,6 +16,8 @@ const config = require("./config/key");
 //   .catch(err => console.error(err));
 
 const mongoose = require("mongoose");
+// console.log("b",process.env)
+
 const connect = mongoose.connect(config.mongoURI,
   {
     useNewUrlParser: true, useUnifiedTopology: true,
