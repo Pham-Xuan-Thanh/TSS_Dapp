@@ -36,6 +36,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+app.use('/api/wallet',require('./routes/wallet'))
 app.use('/api/users', require('./routes/users'));
 
 

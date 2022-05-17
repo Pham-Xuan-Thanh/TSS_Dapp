@@ -10,6 +10,7 @@ const API = require("../middleware/api")
 //=================================
 
 router.get("/auth", auth, (req, res) => {
+    
     res.status(200).json({
         _id: req.user._id,
         isAdmin: req.user.role === 0 ? false : true,
@@ -19,6 +20,7 @@ router.get("/auth", auth, (req, res) => {
         lastname: req.user.lastname,
         role: req.user.role,
         image: req.user.image,
+        address: req.user.wallet.address,
     });
 });
 
@@ -44,7 +46,15 @@ router.post("/login", (req, res) => {
                 loginSuccess: false,
                 message: "Auth failed, email not found"
             });
-
+        if (user.wallet) {
+            isAddress = true
+            address = user.wallet.address
+        }
+        else {
+            isAddress = false
+            address = ""
+        }
+        
         user.comparePassword(req.body.password, (err, isMatch) => {
             if (!isMatch)
                 return res.json({ loginSuccess: false, message: "Wrong password" });
@@ -56,7 +66,7 @@ router.post("/login", (req, res) => {
                     .cookie("w_auth", user.token)
                     .status(200)
                     .json({
-                        loginSuccess: true, userId: user._id , address : user.wallet.address
+                        loginSuccess: true, userId: user._id , isAddress ,  address
                     });
             });
         });

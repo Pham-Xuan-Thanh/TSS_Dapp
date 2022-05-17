@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../../../_actions/user_actions";
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -53,7 +53,7 @@ function LoginPage(props) {
                 } else {
                   localStorage.removeItem('rememberMe');
                 }
-                props.history.push("/");
+                props.history.push( response.payload.isAddress  ? "/dashboard" : "/addwallet");
               } else {
                 setFormErrorMessage('Check out your Account or Password again')
               }
@@ -128,15 +128,16 @@ function LoginPage(props) {
 
               <Form.Item>
                 <Checkbox id="rememberMe" onChange={handleRememberMe} checked={rememberMe} >Remember me</Checkbox>
-                <a className="login-form-forgot" href="/reset_user" style={{ float: 'right' }}>
+                {/* <a className="login-form-forgot" href="/reset_user" style={{ float: 'right' }}>
                   forgot password
-                  </a>
+                  </a> */}
+                  <Link className="login-form-forgot" to="/reset_user" style={{float : 'right'}}>forgot password</Link>
                 <div>
                   <Button type="primary" htmlType="submit" className="login-form-button" style={{ minWidth: '100%' }} disabled={isSubmitting} onSubmit={handleSubmit}>
                     Log in
                 </Button>
                 </div>
-                Or <a href="/register">register now!</a>
+                Or <Link to="/register">register now!</Link>{/*  <a href="/register">register now!</a> */}
               </Form.Item>
             </form>
           </div>

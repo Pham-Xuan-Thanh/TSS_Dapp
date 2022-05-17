@@ -46,11 +46,11 @@ const userSchema = mongoose.Schema({
 
 userSchema.pre('save', function( next ) {
     var user = this;
-    
-    if (user.wallet) {
-        const crytPrvKey = new Cryptr(user.password )
-        user.wallet.priv_key = crytPrvKey.encrypt(user.wallet.priv_key)
-    }
+    // console.log("pre save:",user)
+    // if (user.wallet) {
+    //     const crytPrvKey = new Cryptr(user.password )
+    //     user.wallet.priv_key = crytPrvKey.encrypt(user.wallet.priv_key)
+    // }
     if(user.isModified('password')){    
         // console.log('password changed')
         bcrypt.genSalt(saltRounds, function(err, salt){
@@ -67,6 +67,7 @@ userSchema.pre('save', function( next ) {
     }
     // Create 
 });
+
 
 userSchema.methods.comparePassword = function(plainPassword,cb){
     bcrypt.compare(plainPassword, this.password, function(err, isMatch){
@@ -93,7 +94,7 @@ userSchema.methods.generateToken = function(cb) {
 userSchema.statics.findByToken = function (token, cb) {
     var user = this;
 
-    jwt.verify(token,'secret',function(err, decode){
+    jwt.verify(token,process.env.JWT_SEED,function(err, decode){
         user.findOne({"_id":decode, "token":token}, function(err, user){
             if(err) return cb(err);
             cb(null, user);
