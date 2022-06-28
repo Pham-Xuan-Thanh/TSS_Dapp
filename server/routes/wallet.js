@@ -5,45 +5,39 @@ const {encryptPrivKey} = require("../helper/cryptor")
 
 const { auth } = require("../middleware/auth");
 const API = require("../middleware/api");
-const req = require('express/lib/request');
 
 //=================================
 //             Wallet
 //=================================
 
-router.post("/create",auth, async (req,res) => {
-    
-    let wallet
+router.get("/create",auth, async (req,res) => {
+    let wallet = {}
     await API.get("/api/user/wallet")
-            .then( response => wallet = response.data)
+            .then( response => wallet = response.data.data)
             .catch( err => { console.log("AXIOS:",err)})
-    wallet.priv_key = encryptPrivKey(wallet.priv_key , req.body.password)
-    User.findOneAndUpdate({_id : req.body.user_id}, {wallet}, (err , data ) => {
-        data.comparePassword(req.body.password , (err, isMatch) => {
-            return res.json({success: false , message : "Wrong PASSWORD"})
-        })
+    var priv_key = wallet.priv_key
+    console.log("BE: create wallet", wallet)
+
+    wallet= { pub_key : wallet.pub_key , address : wallet.address}
+    console.log("wallet" , wallet, priv_key)
+
+    User.findOneAndUpdate({_id : req.user._id}, {wallet}, (err , data ) => {
+        
         if (err) return res.json({success: false , err})
-        return res.status(200).json({success : true, address: wallet.address})
+        return res.status(200).json({success : true, address: wallet.address, priv_key})
     } )
 })
 
 router.post("/add", auth, async (req, res ) => {
-    let wallet 
     
-    await API.post("/api/user/wallet",{priv_key : req.body.priv_key}) 
-        .then( resp => wallet = { priv_key : req.body.priv_key , address : resp.data.data.address })
-        .catch( err => console.log("err", err))
+   
     
-    wallet.priv_key = encryptPrivKey(wallet.priv_key , req.body.password)
 
-    User.findOneAndUpdate({_id : req.body.user_id}, {wallet}, (err , data ) => {
+    User.findOneAndUpdate({_id : req.user._id}, {wallet : {address : req.body.address}}, (err , data ) => {
 
-        data.comparePassword(req.body.password , (err, isMatch) => {
-            if (!isMatch)
-            return res.json({success: false , message : "Wrong PASSWORD"})
-        })
+       
         if (err) return res.json({success: false , err})
-        return res.status(200).json({success : true, address: wallet.address})
+        return res.status(200).json({success : true, address: req.body.address})
     } )
 })
 

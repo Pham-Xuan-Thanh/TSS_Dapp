@@ -1,0 +1,61 @@
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin'); 
+// const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
+const path = require("path")
+
+
+const port = process.env.PORT || 3000;
+
+module.exports = {
+    // Webpack configuration goes here
+    entry: path.resolve(__dirname, "./src/index.js"),
+    output: {
+        filename: 'bundle.[hash].js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.js?$/,
+                exclude: /node_modules/,
+                use: [
+                    'babel-loader'
+                ]
+            },
+            {
+                test: /\.(ttf|eot|svg|gif|jpg|png)(\?[\s\S]+)?$/,
+                use: 'file-loader'
+            }
+        ]
+    },
+    resolve: {
+        fallback: {
+            url: require.resolve('url'),
+            fs: require.resolve('fs'),
+            assert: require.resolve('assert'),
+            crypto: require.resolve('crypto-browserify'),
+            http: require.resolve('stream-http'),
+            https: require.resolve('https-browserify'),
+            os: require.resolve('os-browserify/browser'),
+            buffer: require.resolve('buffer'),
+            stream: require.resolve('stream-browserify'),
+        },
+        
+    },
+    plugins: [
+        // new NodePolyfillPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, './public/index.html'),
+            inject: 'body'
+        }), 
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+            process: 'process/browser',
+        }),
+        // new webpack.ProvidePlugin({
+        //     process: 'process/browser',
+        // }),
+    ],
+
+};

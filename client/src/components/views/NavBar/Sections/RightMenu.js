@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useState} from 'react';
-import { Menu } from 'antd';
+import { Menu,Input } from 'antd';
 import {  EyeInvisibleOutlined, 
           EyeOutlined,
           SettingOutlined,
@@ -8,21 +8,32 @@ import {  EyeInvisibleOutlined,
           CopyOutlined  } from '@ant-design/icons'
 import axios from 'axios';
 import { USER_SERVER } from '../../../Config';
-import { withRouter, Link } from 'react-router-dom';
-import { useSelector } from "react-redux";
-
+import { cleanBalance } from '../../../../_actions/wallet_action';
+import { withRouter, Link, useHistory } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
+import { FaDirections } from 'react-icons/fa';
+ 
+const {Search} = Input
 function RightMenu(props) {
   const user = useSelector(state => state.user)
   const wallet = useSelector(state => state.wallet)
   const [visible, setVisible] = useState(false)
   const [openKeys , setOpenKeys] = useState([])
-
-
+  const history = useHistory()
+  const dispatch  = useDispatch()
 
   const handleVisible = () => {
     setVisible(!visible)
   }
+
+  const handleSearch = (query) => {
+    if (query) history.push({pathname : `/thesis/chapter/search`,
+    search : `?query=${query}`})
+    
+  }
+
   const logoutHandler = () => {
+    dispatch(cleanBalance())
     axios.get(`${USER_SERVER}/logout`).then(response => {
       if (response.status === 200) {
         props.history.push("/login");
@@ -47,12 +58,19 @@ function RightMenu(props) {
     )
   } else {
     return (
+      <div style={{display : "flex" , flexDirection : "row"}}>
+      <Search style={{padding: "0.65rem"}}
+          allowClear 
+          enterButton
+          placeholder='keywords,title,email,...'
+          onSearch={(value) => { handleSearch(value)}}
+          />
       <Menu mode={props.mode}
           openKeys={openKeys}
           onOpenChange={()=> setOpenKeys([...openKeys,'submenu']) }
           onMouseLeave={() => setOpenKeys([])}
           >
-
+        
         <Menu.SubMenu key="submenu" title="Account" icon={<SettingOutlined/>}>
         { (wallet?.balance) ?<Menu.Item key="balance" onClick={handleVisible} 
             icon={visible ? <EyeOutlined/> : <EyeInvisibleOutlined /> }
@@ -75,6 +93,7 @@ function RightMenu(props) {
         </Menu.Item>
         </Menu.SubMenu>
       </Menu>
+      </div>
     )
   }
 }
