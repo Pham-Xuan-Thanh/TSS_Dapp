@@ -49,7 +49,6 @@ function RegisterPage(props) {
       validationSchema={Yup.object().shape({
         name: Yup.string()
           .required('Name is required'),
-        studentID: Yup.number("ID is a Number").required("StudentID is required"),
         lastName: Yup.string()
           .required('Last Name is required'),
         email: Yup.string()
@@ -69,18 +68,15 @@ function RegisterPage(props) {
             email: values.email,
             password: values.password,
             name: values.name,
-            studentID: values.studentID,
-            faculty: values.faculty,
-            major: values.major,
             lastname: values.lastname,
             image: `http://gravatar.com/avatar/${moment().unix()}?d=identicon`
           };
-          console.log("DATAA SUB", dataToSubmit)
+
           dispatch(registerUser(dataToSubmit)).then(response => {
             if (response.payload.success) {
               props.history.push("/login");
             } else {
-              alert(response.payload.err.name)
+              alert(response.payload.err.errmsg)
             }
           })
 
@@ -139,25 +135,6 @@ function RegisterPage(props) {
                 )}
               </Form.Item>
 
-              <Form.Item required label="Student ID">
-                <Input
-                  id="studentID"
-                  placeholder="Enter your Student ID"
-                  type="text"
-                  value={values.studentID}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={
-                    errors.studentID && touched.studentID ? 'text-input error' : 'text-input'
-                  }
-                />
-                {errors.studentID && touched.studentID && (
-                  <div className="input-feedback">{errors.studentID}</div>
-                )}
-              </Form.Item>
-
-              
-
               <Form.Item required label="Email" hasFeedback validateStatus={errors.email && touched.email ? "error" : 'success'}>
                 <Input
                   id="email"
@@ -172,40 +149,6 @@ function RegisterPage(props) {
                 />
                 {errors.email && touched.email && (
                   <div className="input-feedback">{errors.email}</div>
-                )}
-              </Form.Item>
-              
-              <Form.Item required label="Faculty">
-                <Input
-                  id="faculty"
-                  placeholder="Enter your Faculty"
-                  type="text"
-                  value={values.faculty}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={
-                    errors.faculty && touched.faculty ? 'text-input error' : 'text-input'
-                  }
-                />
-                {errors.faculty && touched.faculty && (
-                  <div className="input-feedback">{errors.faculty}</div>
-                )}
-              </Form.Item>
-
-              <Form.Item required label="Major">
-                <Input
-                  id="major"
-                  placeholder="Enter your Major"
-                  type="text"
-                  value={values.major}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={
-                    errors.major && touched.major ? 'text-input error' : 'text-input'
-                  }
-                />
-                {errors.major && touched.major && (
-                  <div className="input-feedback">{errors.major}</div>
                 )}
               </Form.Item>
 

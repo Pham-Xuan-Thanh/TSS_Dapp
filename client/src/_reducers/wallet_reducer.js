@@ -1,8 +1,7 @@
 import {
     GET_ADDRESS,
     CREATE_WALLET,
-    GET_BALANCE,
-    LOGOUT_BALANCE
+    GET_BALANCE
 } from "../_actions/types"
 
 export default function(state= {} , action) {
@@ -13,8 +12,6 @@ export default function(state= {} , action) {
             return {...state, wallet : action.payload}    
         case GET_BALANCE :
             return {...state , balance : action.payload}
-        case LOGOUT_BALANCE :
-            return { ...state , balance : null}
         default:
             return state 
     }

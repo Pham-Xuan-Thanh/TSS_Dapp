@@ -3,25 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@babel/core": "^7.18.5",
     "antd": "^4.20.3",
     "axios": "^0.27.2",
-    "base58-js": "^1.0.4",
-    "bs58": "^5.0.0",
-    "copy-webpack-plugin": "^11.0.0",
     "core-js": "^3.6.4",
-    "crypto": "npm:crypto-browserify",
-    "eccrypto": "^1.1.6",
-    "elliptic": "^6.5.4",
-    "file-loader": "^6.2.0",
     "formik": "^2.2.9",
     "moment": "^2.24.0",
-    "node-polyfill-webpack-plugin": "^2.0.0",
     "react": "^16.8.6",
     "react-app-polyfill": "^1.0.6",
-    "react-doc-viewer": "^0.1.5",
     "react-dom": "^16.8.6",
-    "react-draft-wysiwyg": "^1.14.7",
     "react-icons": "^3.7.0",
     "react-redux": "^7.1.0-rc.1",
     "react-router-dom": "^5.0.1",
@@ -29,13 +18,12 @@
     "redux": "^4.0.0",
     "redux-promise": "^0.6.0",
     "redux-thunk": "^2.3.0",
-    "stream": "npm:stream-browserify",
     "yup": "^0.32.11"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -54,18 +42,6 @@
     ]
   },
   "devDependencies": {
-    "assert": "^2.0.0",
-    "babel-loader": "^8.2.5",
-    "buffer": "^6.0.3",
-    "crypto-browserify": "^3.12.0",
-    "http-proxy-middleware": "^1.0.3",
-    "https-browserify": "^1.0.0",
-    "os-browserify": "^0.3.0",
-    "process": "^0.11.10",
-    "react-app-rewired": "^2.2.1",
-    "stream-browserify": "^3.0.0",
-    "stream-http": "^3.2.0",
-    "url": "^0.11.0",
-    "webpack": "^5.73.0"
+    "http-proxy-middleware": "^1.0.3"
   }
 }

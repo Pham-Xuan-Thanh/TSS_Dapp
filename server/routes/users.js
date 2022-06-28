@@ -15,24 +15,21 @@ router.get("/auth", auth, (req, res) => {
         _id: req.user._id,
         isAdmin: req.user.role === 0 ? false : true,
         isAuth: true,
-        studentID: req.user.studentID,
-        faculty : req.user.faculty,
-        major : req.user.major,
         email: req.user.email,
         name: req.user.name,
         lastname: req.user.lastname,
         role: req.user.role,
         image: req.user.image,
-        address: req.user.wallet ?req.user.wallet.address : null,
+        address: req.user.wallet.address,
     });
 });
 
 router.post("/register", async (req, res) => {
 
     var userInit = req.body
-    // await API.get(`/api/user/wallet`)
-    //     .then((response) => { const wallet = response.data.data ; userInit= {... userInit,wallet}})
-    //     .catch( (err) => {console.log(err)})
+    await API.get(`/api/user/wallet`)
+        .then((response) => { const wallet = response.data.data ; userInit= {... userInit,wallet}})
+        .catch( (err) => {console.log(err)})
     const user = new User(userInit);
     user.save((err, doc) => {
         if (err) return res.json({ success: false, err });
@@ -65,7 +62,6 @@ router.post("/login", (req, res) => {
             user.generateToken((err, user) => {
                 if (err) return res.status(400).send(err);
                 res.cookie("w_authExp", user.tokenExp);
-                res.cookie("studentID",user.studentID)
                 res
                     .cookie("w_auth", user.token)
                     .status(200)

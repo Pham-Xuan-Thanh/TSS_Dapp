@@ -7,7 +7,7 @@ import Icon from '@ant-design/icons';
 
 import './Sections/Navbar.css';
 
-function NavBar(props) {
+function NavBar() {
   const [visible, setVisible] = useState(false)
 
   const showDrawer = () => {

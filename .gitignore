@@ -3,10 +3,7 @@
 
 dev.js
 
-*.pdf
-*.txt
-*.doc
-*.docx
+
 
 .DS_Store
 
