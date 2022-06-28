@@ -10,13 +10,13 @@ import Footer from "./views/Footer/Footer"
 import Dashboard from "./views/Dashboard/dashboard"
 import AddWallet from "./views/AddWallet/addwallet"
 import Thesis from './views/ThesisPage/ThesisList';
-
-
+import SearchPage from './views/SearchPage/SearchPage';
+import {sign} from  "../helper/ecies"
 //null   Anyone Can go inside
 //true   only logged in user can go inside
 //false  logged in user can't go inside
-
 function App() {
+  sign()
   return (
     <Suspense fallback={(<div>Loading...</div>)}>
       <NavBar />
@@ -27,7 +27,10 @@ function App() {
           <Route exact path="/register" component={Auth(RegisterPage, false)} />
           <Route exact path="/dashboard" component={Auth(Dashboard, true)} />
           <Route exact path="/addwallet" component={Auth(AddWallet, true)} />
-          <Route exact path="/user/thesis" component={Auth(Thesis, true)} />
+          <Route exact path="/user/thesis" component={Auth(Thesis, true)} >
+          </Route>
+          <Route exact path="/thesis/chapter/search" component={SearchPage}/>
+
         </Switch>
       </div>
       <Footer />

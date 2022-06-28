@@ -10,11 +10,11 @@ export default function (SpecificComponent, option, adminRoute = null) {
         let user = useSelector(state => state.user);
         const dispatch = useDispatch();
 
-        useEffect(() => {
+        useEffect( () => {
             //To know my current status, send Auth request 
-            dispatch(auth()).then(response => {
-                console.log("aaaaa", response)
+             dispatch(auth()).then( response => {
                 user.isAuth = response.payload.isAuth
+                user.studentID = response.payload.studentID
                 //Not Loggined in Status 
                 if (!response.payload.isAuth) {
                     if (option) {
@@ -34,9 +34,11 @@ export default function (SpecificComponent, option, adminRoute = null) {
                             props.history.push('/')
                         }
                     }
+                    console.log("aaaaa", response)
+
                     if (response.payload?.address) { 
                         user.address = response.payload.address
-                        dispatch(getBalance(user.address))
+                         dispatch( getBalance(user.address))
                         .then(resp => {
                             user.balance = resp.payload.balance
                         })

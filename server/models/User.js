@@ -5,11 +5,22 @@ const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 const moment = require("moment");
 
-const WalletSchema = mongoose.Schema({address : String, priv_key : String})
+const WalletSchema = mongoose.Schema({address : String})
 const userSchema = mongoose.Schema({
     name: {
         type:String,
         maxlength:50
+    },
+    studentID: {
+        type : Number,
+    },
+    faculty: {
+        type :String,
+        trim : true
+    },
+    major: {
+        type : String,
+        trim : true
     },
     email: {
         type:String,
