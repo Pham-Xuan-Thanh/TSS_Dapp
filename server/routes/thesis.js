@@ -31,6 +31,24 @@ router.post("/create", auth, (req, res) => {
 
 })
 
+router.post("/setthesis", (req, res) => {
+    const thesis = Thesis(req.body.thesis)
+    User.findOne({ email: req.body.email }, (err, user) => {
+        if (err) return res.json({ success: false, err })
+        else {
+            thesis.userid = user._id
+
+            thesis.save((error, thesis) => {
+                console.log("su canea ", user)
+                if (error) return res.json({ success: false, error })
+                else {
+                    return res.status(200).json({ success: true })
+                }
+            })
+        }
+    })
+})
+
 router.get("/chapter/search", auth, (req, res, next) => {
 
     const searchParams = req.query.query
@@ -117,29 +135,59 @@ router.get("/list", auth, (req, res) => {
 
 // })
 
-router.get("/:thesis/chapter/:chapter", auth, (req, res, next) => {
+
+
+router.post("/:thesis/chapter/:chapter/download", auth, (req, res, next) => {
 
     Thesis.findOne({ userid: req.user.id, _id: req.params.thesis }, (err, thesis) => {
         if (err) return res.json({ success: false, err })
         var chapter = thesis.chapters.id(req.params.chapter)
 
-        req.fileDownload = chapter || {}
+        req.chapter = chapter || {}
         next()
     })
 }, (req, res, next) => {
-    const filepath = path.join(`${__dirname}`, `../../${req.fileDownload.filepath}`)
-    console.log("file path", filepath, req.fileDownload)
+    const filepath = path.join(`${__dirname}`, `../../${req.chapter.filepath}`)
+    // console.log("file path", filepath, req.fileDownload)
+    console.log(" zo r ne download chapter ", req.body, req.params.chapter)
+
     try {
         if (fs.existsSync(filepath)) {
+            if (req.chapter.fileextension == 'pdf') 
             return res.download(filepath)
+        }
+        if (req.chapter.filehash || req.body.filehash) {
+
+            next()
+        }
+        else {
+            return res.json({ success: false, notsave: true })
         }
         // return res.json({success : false , err : "Not exist"})
         // next()
     } catch (err) {
-        res.json({ success: false, err })
+        res.json({ success: false, notgetipfs : true , err })
         console.log("catach ", err)
     }
 }
+    , async (req, res) => {
+
+        var filehash = req.body.filehash ? req.body.filehash : req.chapter.filehash
+        var [err, dataGot] = await ipfsWriteFile(filehash)
+        if (err) return res.json({ success: false, cantgetipfs: true, err })
+
+        const pathfile = path.join(`${__dirname}`, `../../dump/chapter_${req.user._id}_${req.params.chapter}.${req.chapter.fileextension}`)
+        fsPromises.writeFile(pathfile, dataGot)
+            .then(() => {
+                return res.download(pathfile, `${req.chapter._id}.${req.chapter.fileextension}`, (err) => {
+                    if (err)
+                        return res.json({ success: false, err })
+
+                })
+            })
+            .catch(err => res.json({ success: false, notExist: true, err }))
+    }
+
     // , async (req, res) => {
     //     if (req.fileDownload.filehash) {
     //         var [err, dataGot] = await ipfsWriteFile(req.fileDownload.filehash)
@@ -154,6 +202,16 @@ router.get("/:thesis/chapter/:chapter", auth, (req, res, next) => {
     // }
 )
 
+router.get("/:thesisid/chapter/:chapterid", auth, (req, res,) => {
+    Thesis.findOne({ userid: req.user.id, _id: req.params.thesisid }, (error, thesis) => {
+        if (error) return res.json({ success: false, notListDB: true, err })
+        else {
+            var chapter = thesis.chapters.id(req.params.chapterid) || {}
+            thesis.chapters = [chapter]
+            return res.status(200).json({ success: true, thesis })
+        }
+    })
+})
 router.post("/:thesisid/getchapter/:chapterid", auth,
     (req, res, next) => { // Check Password
         User.findOne({ _id: req.user.id }, (error, user) => {
@@ -194,27 +252,16 @@ router.post("/:thesisid/getchapter/:chapterid", auth,
             if (err) return res.json({ success: false, cantgetipfs: true, err })
 
             const pathfile = path.join(`${__dirname}`, `../../dump/chapter_${req.user._id}_${req.params.chapterid}.${req.fileDownload.fileextension}`)
-             fsPromises.writeFile(pathfile, dataGot)
+            fsPromises.writeFile(pathfile, dataGot)
                 .then(() => {
                     return res.download(pathfile)
                 })
-                .catch( err => res.json({ success: false, notExist : true, err }) )
-            
+                .catch(err => res.json({ success: false, notExist: true, err }))
+
         } else { return res.json({ success: false, notgetipfs: true, err: "NOT EXISTS :<" }) }
     })
 
 router.post("/:thesisid/publishchapter/:chapterid", auth,
-    (req, res, next) => { // Check Password
-        User.findOne({ _id: req.user.id }, (error, user) => {
-            user.comparePassword(req.body.password, (err, isMatch) => {
-                if (!isMatch) res.json({ success: false, wrongpass: true, err: "Password not correct!!" })
-                else {
-                    req.priv_key = decryptPrivKey(user.wallet.priv_key, req.body.password)
-                    next()
-                }
-            })
-        })
-    },
     (req, res, next) => { // Get Chapter data
 
         Thesis.findOne({ userid: req.user.id, _id: req.params.thesisid }, (error, thesis) => {
@@ -225,88 +272,83 @@ router.post("/:thesisid/publishchapter/:chapterid", auth,
                 var chapter = thesis.chapters.id(req.params.chapterid) || {}
                 req.thesis = thesis
                 req.chapter = chapter
+                // if (chapter.isPublish) {
+                //     return res.json({ success: true, thesis: thesis })
+                // }
                 next()
             }
             // console.log("dam ba cai thg nhoc" , req)
         })
     },
-    (req, res, next) => {
-        const chapter = req.chapter
-        if (chapter.isPublish) {
-            return res.json({ success: true, thesis: req.thesis })
-        } else {
-            const filepath = path.join(`${__dirname}`, `../../${chapter.filepath}`)
-
-            fs.promises.stat(filepath)
-                .then(() => next())
-                .catch((error) => { console.log("cc ne heee", error); res.json({ success: false, notExist: true, error }); })
-
-        }
-
-
-    },
     // (req, res, next) => {
-    //     var listAddress = []
-    //     User.find({ email: { $in: req.body.listAllowedEmail } }, (err, users) => {
-    //         users.map(user => listAddress.push(user.wallet.address))
-    //         req.listAddress = listAddress || {}
-    //         console.log("jshdoigbjerjk", req.listAddress)
-    //         if (err) {
-    //             return res.json({ success: false, err })
-    //         } else {
-    //             next()
-    //         }
-    //     })
+    //     const chapter = req.chapter
+    //     if (chapter.isPublish) {
+    //         return res.json({ success: true, thesis: req.thesis })
+    //     } else {
+    //         const filepath = path.join(`${__dirname}`, `../../${chapter.filepath}`)
+
+    //         fs.promises.stat(filepath)
+    //             .then(() => next())
+    //             .catch((error) => { console.log("cc ne heee", error); res.json({ success: false, notExist: true, error }); })
+
+    //     }
+
+
     // },
+    // // (req, res, next) => {
+    // //     var listAddress = []
+    // //     User.find({ email: { $in: req.body.listAllowedEmail } }, (err, users) => {
+    // //         users.map(user => listAddress.push(user.wallet.address))
+    // //         req.listAddress = listAddress || {}
+    // //         console.log("jshdoigbjerjk", req.listAddress)
+    // //         if (err) {
+    // //             return res.json({ success: false, err })
+    // //         } else {
+    // //             next()
+    // //         }
+    // //     })
+    // // },
     async (req, res, next) => {
 
-        var chapter = req.chapter || {}
-        var filepath = path.join(`${__dirname}`, `../../${chapter.filepath}`)
-        const [err, fileInfo] = await ipfsAddFile(filepath)
-        if (err) {
-            res.json({ success: false, notsend2IPFS: true, err })
-            // return res.json({ success: false, err })
-        } else {
-            const postData = {
-                "priv_key": req.priv_key,
-                "reciever": "16Jcx92y5gv1vfVfzqFkghqXYSCdTkmgV7",
-                "amount": req.body.amount,
-                "file_path": filepath
-            }
+        // var chapter = req.chapter || {}
+        // var filepath = path.join(`${__dirname}`, `../../${chapter.filepath}`)
+        // const [err, fileInfo] = await ipfsAddFile(filepath)
+        // if (err) {
+        //     res.json({ success: false, notsend2IPFS: true, err })
+        //     // return res.json({ success: false, err })
+        // } else {
 
-            API.post(`${process.env.WALLETAPP_URI}/api/user/transaction/create/upload`, postData)
-                .then(resp => resp.data)
-                .then((resp) => {
-                    console.log("Hwehgjh")
-                    fileInfo.cid = fileInfo.cid.toString()
-                    if (resp.success) {
-                        fileInfo.filehash_enc = resp.data
-                        req.ipfsInfo = fileInfo
-                        req.chapter.isPublish = true
-                        next()
-                    }
-                })
-                .catch(err => { res.json({ success: false, notCreateTX: true, err }) })
+        console.log("trc khi sne d", req.body, req.body.tx.tx_ipfs)
+        API.post(`${process.env.WALLETAPP_URI}/api/user/transaction/create/upload`, req.body)
+            .then(() => next())
+            .catch(err => { console.log("xui", err.data); res.json({ success: false, notCreateTX: true, err }) })
 
-        }
-        // Thesis.findOne({ userid: req.user.id, _id: req.query.thesisid }, (error, thesis) => {
+    }
+    // Thesis.findOne({ userid: req.user.id, _id: req.query.thesisid }, (error, thesis) => {
 
-        //     var chaptermge = thesis.chapters.id(req.query.chapterid)
-        //     // chapter.isPublish = true && !err
-        //     chaptermge.set(chapter)
+    //     var chaptermge = thesis.chapters.id(req.query.chapterid)
+    //     // chapter.isPublish = true && !err
+    //     chaptermge.set(chapter)
 
-        //     return thesis.save()
-        // })
+    //     return thesis.save()
+    // })
 
-        // .catch((error) => res.json({ success: false, error }))
-    },
+    // .catch((error) => res.json({ success: false, error }))
+    // }
+    ,
     (req, res) => {
         var chapter = req.chapter || {}
         Thesis.findOne({ userid: req.user.id, _id: req.params.thesisid }, (error, thesis) => {
             var chaptermge = thesis.chapters.id(req.params.chapterid)
-            chapter.filehash = req.ipfsInfo.cid
-            chapter.filehash_enc = req.ipfsInfo.filehash_enc
+            console.log("req " , req.body.tx.tx_ipfs[0].ipfs_enc , req.body.tx.tx_ipfs[0].exp )
+            // chapter.filehash = req.ipfsInfo.cid
+            chapter.filehash_enc = req.body.tx.tx_ipfs[0].ipfs_enc
+            chapter.expiredAt = req.body.tx.tx_ipfs[0].exp
+            chapter.publishat = Date.now()
             chaptermge.set(chapter)
+            // chaptermge.save()
+            console.log("chapter khi ppublish:", chapter)
+            
 
             return thesis.save()
         })
@@ -316,9 +358,9 @@ router.post("/:thesisid/publishchapter/:chapterid", auth,
             .catch(err => { res.json({ success: false, notsend2IPFS: false, notUpdate: true, err }) })
     })
 
+
 router.post("/:thesisid/pushchapter/:chapterid", auth,
     (req, res, next) => {
-        console.log("CC NE AHAHAH")
         Thesis.findOne({ userid: req.user.id, _id: req.params.thesisid }, (error, thesis) => {
 
             if (error) return res.json({ success: false, notListDB: true, err })
@@ -357,6 +399,9 @@ router.post("/:thesisid/pushchapter/:chapterid", auth,
 
             fileInfo.cid = fileInfo.cid.toString()
             req.ipfsInfo = fileInfo
+            if (req.body.notStore) {
+                return res.status(200).json({ success: true, ipfshash: fileInfo.cid })
+            }
             next()
         }
         // Thesis.findOne({ userid: req.user.id, _id: req.query.thesisid }, (error, thesis) => {

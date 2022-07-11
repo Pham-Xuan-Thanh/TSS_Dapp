@@ -3,7 +3,8 @@ import {
     CREATE_WALLET,
     GET_BALANCE,
     LOGOUT_BALANCE,
-    ERROR_WALLET
+    ERROR_WALLET,
+    GET_TX_INPS
 } from "./types"
 
 import { SERVER_API } from "../components/Config"
@@ -36,7 +37,7 @@ export function createWallet() {
 
 export async function getBalance(dataToSubmit) {
     const request = await axios.post(`/api/wallet/getbalance`, { address: dataToSubmit })
-        .then(response => response.data)
+        .then(response => {return response.data})
 
 
     return {
@@ -48,6 +49,18 @@ export async function getBalance(dataToSubmit) {
 
 }
 
+export function getListTxInp() {
+    console.log("zo chua tml ")
+    const request = 
+        axios.post(`/api/wallet/transaction/gettxin`)
+            .then(resp => { console.log("abcez:" , resp.data) ; return resp.data})
+            .catch(err => console.log("loi j day cc" , err))
+
+    return  {
+        type: GET_TX_INPS,
+        payload : request
+    }
+}
 
 export function cleanBalance() {
     return {

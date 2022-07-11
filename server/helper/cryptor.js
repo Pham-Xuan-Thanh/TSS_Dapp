@@ -1,6 +1,5 @@
 const Cryptr = require('cryptr');
 
-
 function  encryptPrivKey(privKey,  pass) {
     const crytPrvKey = new Cryptr(pass )
     return crytPrvKey.encrypt(privKey)

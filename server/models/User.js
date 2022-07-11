@@ -5,7 +5,21 @@ const saltRounds = 10;
 const jwt = require('jsonwebtoken');
 const moment = require("moment");
 
-const WalletSchema = mongoose.Schema({address : String})
+const WalletSchema = mongoose.Schema({address : String , pub_key : String})
+const TransactionInputSchema = mongoose.Schema({
+    tx_id : {
+        type : String
+    },
+    vout : {
+        type : Number
+    },
+    value : {
+        type : Number
+    }
+})
+// const fileHashSchema = mongoose.Schema({
+//     {{}}
+// })
 const userSchema = mongoose.Schema({
     name: {
         type:String,
@@ -51,6 +65,16 @@ const userSchema = mongoose.Schema({
         __v : false,
         _createAt : false,
         type : WalletSchema
+    },
+    txinps : {
+        type : [TransactionInputSchema],
+        default : [],
+
+    },
+    files : {
+        file_hash_enc : {
+            type : String
+        }
     }
 })
 

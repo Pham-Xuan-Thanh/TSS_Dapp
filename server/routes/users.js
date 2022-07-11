@@ -24,6 +24,7 @@ router.get("/auth", auth, (req, res) => {
         role: req.user.role,
         image: req.user.image,
         address: req.user.wallet ?req.user.wallet.address : null,
+        pub_key : req.user.wallet ? req.user.wallet.pub_key : null
     });
 });
 

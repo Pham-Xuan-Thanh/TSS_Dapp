@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState ,useMemo } from 'react';
 import { Formik } from 'formik';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import axios from "axios"
-import { editThesis, pushChapter2IPFS } from '../../../_actions/thesis_actions';
+import { editThesis, publishChapter, pushChapter2IPFS } from '../../../_actions/thesis_actions';
+import { createPublishTransaction } from '../../../_actions/transaction_actions';
 import Icon, { InfoCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { Tabs, Form, Input, Modal, Tag, Progress, Upload, message, Card, Tooltip, Typography, Checkbox, Select, Space, Divider } from 'antd';
 import { useSelector } from "react-redux"
@@ -94,13 +95,13 @@ const ChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) => {
                 onOk={async () => {
                     var fileTyped
                     if (!uploadmethod.current) {
-                       
-                            fileTyped =  new File([new Blob([editorState])], `${URL.createObjectURL(new Blob())}.txt`, { type: "text/plain", lastModified: new Date().getTime(), })
 
-                            console.log("Mot nguoi tung thuong nhieu the ,roi cung hoa nguoi dung", selectedFile)
-                        
+                        fileTyped = new File([new Blob([editorState])], `${URL.createObjectURL(new Blob())}.txt`, { type: "text/plain", lastModified: new Date().getTime(), })
+
+                        console.log("Mot nguoi tung thuong nhieu the ,roi cung hoa nguoi dung", selectedFile)
+
                     } else {
-                        fileTyped = selectedFile? selectedFile.file : null 
+                        fileTyped = selectedFile ? selectedFile.file : null
                     }
 
                     await handleUpload(fileTyped)
@@ -325,17 +326,88 @@ const ChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) => {
 
 const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) => {
 
-    const balance = useSelector(state => state.wallet.balance)
+    const wallet = useSelector(state => state.user.userData)
     const formikRef = useRef()
 
     const [form] = Form.useForm()
     const dispatch = useDispatch()
+    // useMemo( () => {
+       
+
+        
+
+    // }, [])
+    var options = useSelector(state => state.wallet.tx_inps) ||  []
+
+   
     const [isPublish, setIsPublish] = useState(true)
+    const [choseTxInps, setChoseTxInps] = useState([])
+
     var chapter = dataCommitted.chapters?.filter(chapter => chapter._id === chapterID)[0] || {}
     var publishFee = Math.max(Math.round(chapter.size / 1024 / 1024 / 1024 * 1000), 1)
     const [listEmail, setListEmail] = useState([])
-    var isAcceptable = (balance?.amount >= publishFee)
     let index = 0
+    // options = [
+    //     {
+    //         "tx_id": "ddd0951b7e30efcd613f857b546e6ff1339c9772f028ada067f2d3ce86382d3f",
+    //         "vout": 0,
+    //         "value": 2
+    //     },
+    //     {
+    //         "tx_id": "1aa30516947c304c8ca257659a07b8e0db1f4ba1e877ff4e50d112a120654ad1",
+    //         "vout": 0,
+    //         "value": 8
+    //     },
+    //     {
+    //         "tx_id": "68c59915c0e88342505d99617a5296675dfb92e6bbf507230a9bc541265ffc77",
+    //         "vout": 0,
+    //         "value": 2
+    //     },
+    //     {
+    //         "tx_id": "86f5760de5682011f2478105db8b203db87058d568012ec844c80fe2ca9f125b",
+    //         "vout": 0,
+    //         "value": 10
+    //     },
+    //     {
+    //         "tx_id": "88b115d9a4fb5b9a4d7bd3891a4d5528548bb799b6ab92e9eae7f53dd48e9105",
+    //         "vout": 0,
+    //         "value": 10
+    //     },
+    //     {
+    //         "tx_id": "8c35acfe213c87e24d745b6c014df082e5fdeb20c59f21bfc36f231af492504c",
+    //         "vout": 0,
+    //         "value": 2
+    //     }
+    // ]
+    const TotlaFee = () => {
+        var sum = 0
+        options.map(option => {
+            if (choseTxInps.includes(option.tx_id))
+                sum += option.value
+        })
+        return sum
+    }
+    const GetTxinps = () => {
+        return options.filter(option => choseTxInps.includes(option.tx_id))
+    }
+    var isAcceptable = (TotlaFee() >= publishFee)
+
+    const TXinpProps = {
+        mode: 'multiple',
+        style: {
+            width: '100%',
+        },
+        value: choseTxInps,
+        // filterOption : true,
+        // optionFilterProp : "key" ,
+        onChange: (newValue, options) => {
+            setChoseTxInps(newValue);
+        },
+        placeholder: 'Select Item...',
+        maxTagCount: 'responsive',
+    };
+
+
     const SelectAllowUser = ({ listEmail, setListEmail }) => {
         const [items, setItems] = useState(listEmail || []);
         const [name, setName] = useState('');
@@ -355,7 +427,7 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                 style={{
                     width: 300,
                 }}
-                placeholder="List user allow to access"
+                placeholder="Please Enter User Allowed Address"
                 dropdownRender={(menu) => (
                     <>
                         {menu}
@@ -370,7 +442,7 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                                 padding: '0 8px 4px',
                             }}
                         >
-                            <Input placeholder="Please enter email" value={name} type="email" onChange={onNameChange} />
+                            <Input placeholder="Please enter Address" value={name} type="text" onChange={onNameChange} />
                             <Typography.Link
                                 onClick={addItem}
                                 style={{
@@ -406,6 +478,8 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                 onOk={async () => {
 
                     if (formikRef.current) formikRef.current.handleSubmit()
+                    setVisible(false)
+                    setChoseTxInps([])
 
                 }}
             >
@@ -427,11 +501,30 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
 
                             let dataToSubmit = {
                                 password: values.password,
-                                listAllowedEmail: listEmail || [],
+                                listAllowedPublicKey: listEmail || [],
+                                listTxInps : GetTxinps()
                             }
 
                             if (isPublish) {
-                                console.log("Hay lam con trai ", dataToSubmit)
+                                dataToSubmit.amount = publishFee
+                                dataToSubmit.totalfee = TotlaFee()
+                                dataToSubmit.ownerAddress = wallet.address 
+                                dataToSubmit.ownerPublicKey = wallet.pub_key
+                                dispatch(pushChapter2IPFS(dataCommitted._id, chapterID, true))
+                                    .then( response => {
+                                        if (response.payload.success) {
+                                            dataToSubmit.ipfs_hash = response.payload.ipfshash
+                                            console.log("Data to trc khi tao transaction:" , dataToSubmit)
+                                            dataToSubmit = createPublishTransaction(dataToSubmit)
+                                            console.log("data TO cmmit sau tao tx: " , JSON.stringify( dataToSubmit))
+                                            dispatch(publishChapter(dataCommitted._id, chapterID,dataToSubmit))
+                                        } else {
+                                            console.log("else" , response.payload)
+                                            message.error("Cant add file to IPFS network !!! Confirm your file stable in database")
+                                            setVisible(false)
+                                        }
+                                    })
+                                    .catch( err => console.log("sui seo la :" , err))
                             } else {
 
                                 dispatch(pushChapter2IPFS(dataCommitted._id, chapterID))
@@ -479,7 +572,6 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                                     <Typography.Title>
                                         {publishFee} TSS
                                     </Typography.Title>
-
                                     {
 
                                         !isAcceptable ?
@@ -488,6 +580,21 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                                                 <Tag color="green">Accepted</Tag>
                                             </>
                                     }
+
+                                    <Select {...TXinpProps} >
+                                        {
+                                            options.map(option => {
+                                                return (
+                                                    <Select.Option value={option.tx_id} key={option.tx_id}> 0x<Typography.Text ellipsis={{suffix : option.tx_id.slice(-4).trim()}} > {option.tx_id.slice(0,8)}...</Typography.Text>  ${option.value}  </Select.Option>
+                                                )
+                                            })
+                                        }
+                                    </Select>
+                                    <Space direction="horizontal" align="start" size="middle">
+                                        <Typography > = {TotlaFee()}</Typography>
+                                    </Space>
+
+                                    {/* {console.log("day en", options)} */}
                                 </Card>
                                 {/* <Title level={2}> Create New Thesis </Title> */}
                                 <Form form={form} onSubmit={handleSubmit}>
@@ -512,7 +619,7 @@ const PublishChapterModal = ({ visible, setVisible, dataCommitted, chapterID }) 
                                             <div className="input-feedback">{errors.password}</div>
                                         )}
                                     </Form.Item>
-                                    <Form.Item label={<><Typography.Text>Allowed Users</Typography.Text><Tooltip placement='top' title={<span >Verified by email </span>}> <InfoCircleOutlined /> </Tooltip></>}>
+                                    <Form.Item label={<><Typography.Text>Allowed Users</Typography.Text><Tooltip placement='top' title={<span >Verified by Address </span>}> <InfoCircleOutlined /> </Tooltip></>}>
                                         <SelectAllowUser id="allowUsers" listEmail={listEmail} setListEmail={setListEmail} ></SelectAllowUser>
                                     </Form.Item>
 

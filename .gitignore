@@ -2,7 +2,7 @@
 /build
 
 dev.js
-
+/dump
 *.pdf
 *.txt
 *.doc

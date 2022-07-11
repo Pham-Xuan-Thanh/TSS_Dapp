@@ -10,6 +10,8 @@ import {
     PUBLISH_CHAPTER,
     PUSH_CHAPTER
 } from './types';
+import { eciesDecrypt } from '../helper/ecies';
+import { TransactionInput } from './transaction_actions';
 
 export function createThesis(dataToSubmit) {
     console.log("CREATE THESIS", dataToSubmit)
@@ -59,9 +61,9 @@ export function editThesis(dataToSubmit) {
     }
 }
 
-export async function downloadThesis(thesisID, chapterID) {
-    const res = await axios.get(`/api/thesis/${thesisID}/chapter/${chapterID}`,{responseType: 'blob'})
-    
+export async function downloadThesis(thesisID, chapterID,dataToSubmit) {
+    const res = await axios.post(`/api/thesis/${thesisID}/chapter/${chapterID}/download`,dataToSubmit , {responseType : "blob"})
+                        
     return res
 }
 
@@ -75,8 +77,8 @@ export function uploadChapter(dataToSubmit, config) {
     }
 }
 
-export function publishChapter(thesisID, chapterID){
-    const request = axios.post(`/api/thesis/${thesisID}/publishchapter/${chapterID}`)
+export function publishChapter(thesisID, chapterID, dataToSubmit){
+    const request = axios.post(`/api/thesis/${thesisID}/publishchapter/${chapterID}`, dataToSubmit)
     .then(resp => resp.data)
 
     return {
@@ -85,14 +87,45 @@ export function publishChapter(thesisID, chapterID){
     }
 }
 
-export function pushChapter2IPFS(thesisID, chapterID){
-    const request = axios.post(`/api/thesis/${thesisID}/pushchapter/${chapterID}`)
+export function pushChapter2IPFS(thesisID, chapterID,notStore = false){
+    const request = axios.post(`/api/thesis/${thesisID}/pushchapter/${chapterID}`,{notStore})
     .then(resp => resp.data)
     
     return {
         type : UPDATE_THESIS,
         payload : request
     }
+}
+
+export function shareChapterByEmail(thesisID, chapterID, dataToSubmit) {
+        const request = axios.get(`/api/thesis/${thesisID}/chapter/${chapterID}`)
+                .then( resp => resp.data)
+                .then( resp => {
+                    if (resp.success) {
+                        console.log("data trong share ne:" ,resp)
+
+                         return eciesDecrypt(dataToSubmit.priv_key,resp.thesis.chapters[0].filehash_enc) 
+                            .then( filehash => {
+                                resp.thesis._id = null
+                                resp.thesis.chapters[0].isPublish = false
+                                resp.thesis.chapters[0].publishat = 0
+                                resp.thesis.chapters[0].filehash = filehash
+                                resp.thesis.chapters[0].filehash_enc = ""
+                                resp.thesis.chapters[0].filepath = ""
+
+                                const req = axios.post(`/api/thesis/setthesis`,{email : dataToSubmit.email, thesis : resp.thesis})
+                                    .then(res => res.data)
+                                return req
+                            })
+                    }else {
+                        return new Promise((_,reject) => reject("Cant get Encrypted File hash!! Confirm you published Chapter :(") )
+                    }
+                })
+        return  {
+            type :"abc",
+            payload :  request
+        }
+                
 }
 
 

@@ -14,9 +14,9 @@ import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
 import promiseMiddleware from 'redux-promise';
 import ReduxThunk from 'redux-thunk';
+window.Buffer = require('buffer/').Buffer;
 
 const createStoreWithMiddleware = applyMiddleware(promiseMiddleware, ReduxThunk)(createStore);
-window.Buffer = require('buffer/').Buffer;
 ReactDOM.render(
     <Provider
         store={createStoreWithMiddleware(

@@ -46,7 +46,8 @@ function AddWallet(props) {
                     onSubmit={(values, { setSubmitting }) => {
                         setTimeout(() => {
                             let dataToSubmit = {
-                                address: values.address
+                                address: values.address,
+                                pub_key : values.pub_key
                             }
                             const res = addwallet ? dispatch(getAddress(dataToSubmit)) : dispatch(createWallet())
                             res.then(response => {
@@ -116,6 +117,25 @@ function AddWallet(props) {
                                 />
                                 {errors.address && touched.address && (
                                     <div className="input-feedback">{errors.address}</div>
+                                )}
+                            </Form.Item>
+                            <Form.Item label="Publick Key">
+                                <Input
+                                    id="pub_key"
+                                    prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                                    placeholder="Enter your publick key"
+                                    type="text"
+                                    value={values.pub_key}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    className={
+                                        errors.pub_key && touched.pub_key ? 'text-input error' : 'text-input'
+                                    }
+
+                                    disabled={!addwallet}
+                                />
+                                {errors.pub_key && touched.pub_key && (
+                                    <div className="input-feedback">{errors.pub_key}</div>
                                 )}
                             </Form.Item>
 

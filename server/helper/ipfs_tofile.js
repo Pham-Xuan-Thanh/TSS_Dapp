@@ -9,7 +9,7 @@ const { concat: uint8ArrayConcat } = require('uint8arrays/concat')
 
 const {create} = require('ipfs-http-client')
 
-const ipfsClient = create({ url : "http://35.220.139.101:5001"})
+const ipfsClient = create({ url : "http://127.0.0.1:5001"})
 const fs= require('fs')
 const fsPromises = fs.promises
 

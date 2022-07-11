@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from "react-redux"
 import { FrownOutlined, SolutionOutlined, DeleteOutlined, EditOutlined, SnippetsOutlined, DownloadOutlined } from '@ant-design/icons';
 
 import { createThesis, listThesises, deleteThesis, editThesis } from '../../../_actions/thesis_actions';
+import { getListTxInp } from '../../../_actions/wallet_action';
+
 import ThesisCreateModal from './ThesisModalForm';
 import ChaptersTable from './ChaptersTable';
 
@@ -20,6 +22,7 @@ function Thesis({ user }) {
     const [dataModal, setDataModal] = useState({ studentID: user.studentID } || {})
     const [dispatchModal, setDispatchModal] = useState()
     useMemo(async () => {
+
         await dispatch(listThesises())
             .then(resp => {
                 console.log("MEMO", resp.payload)
@@ -28,7 +31,6 @@ function Thesis({ user }) {
             })
 
     }, [])
-    
     const columns = [
         { title: "Name", dataIndex: "article", key: "article" },
         { title: "Student ID", dataIndex: "studentID", key: "sid" },

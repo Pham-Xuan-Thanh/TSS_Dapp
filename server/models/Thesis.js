@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const chapterSchema = mongoose.Schema({title: String , filepath: String, filehash: String, filehash_enc : String , index : Number,isPublish : Boolean ,size : Number, fileextension  : String, datepublish : String})
+const chapterSchema = mongoose.Schema({title: String , filepath: String, filehash: String, filehash_enc : String , index : Number,isPublish : Boolean ,size : Number, fileextension  : String, publishat : Number, expiredAt : Number})
 
 const thesisSchema = mongoose.Schema({
     studentID: {

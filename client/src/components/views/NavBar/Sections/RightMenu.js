@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useState} from 'react';
-import { Menu,Input } from 'antd';
+import { Menu,Input , Typography } from 'antd';
 import {  EyeInvisibleOutlined, 
           EyeOutlined,
           SettingOutlined,
@@ -36,7 +36,7 @@ function RightMenu(props) {
     dispatch(cleanBalance())
     axios.get(`${USER_SERVER}/logout`).then(response => {
       if (response.status === 200) {
-        props.history.push("/login");
+        history.push("/login");
       } else {
         alert('Log Out Failed')
       }
@@ -77,9 +77,9 @@ function RightMenu(props) {
             title="abc">
               {visible ? `${ wallet.balance.amount}$`: `*****`}
         </Menu.Item> : <></>}
-        { (user.userData?.isAuth) ?          
+        { (user.userData?.isAuth && user.userData.address) ?          
           <Menu.Item key="wallet" icon={<IdcardOutlined />}>
-             {user.userData.address} <CopyOutlined onClick={() => {   navigator.clipboard.writeText(`${user.userData.address}`)}}  />
+            <Typography.Text copyable={{icon : <CopyOutlined  /> , text: user.userData.address}}> {user.userData.address.slice(0,8)}...{user.userData.address.slice(-4)}</Typography.Text>  
           </Menu.Item>
           : <></>
         } 

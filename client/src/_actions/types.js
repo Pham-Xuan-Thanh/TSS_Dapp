@@ -15,4 +15,5 @@ export const UPLOAD_CHAPTER = 'upload_chapter';
 export const PUBLISH_CHAPTER = "publish_chapter";
 export const PUSH_CHAPTER = "push_chapter";
 export const ERROR_THESIS = "error_loading_thesis";
-export const EXPORT_KEYWORDS = 'export_keyword'
+export const EXPORT_KEYWORDS = 'export_keyword';
+export const GET_TX_INPS = "get_transaction_input";

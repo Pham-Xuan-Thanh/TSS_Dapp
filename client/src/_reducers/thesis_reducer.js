@@ -15,7 +15,7 @@ export default function (state = {}, action) {
             return {...state,  thesises : action.payload}
         case UPDATE_THESIS : 
               {
-                  if (action.payload.success) {
+                  if (action.payload.success && action.payload.thesis) {
                   const index = state.thesises.thesises.findIndex( thesis => thesis._id === action.payload.thesis._id)
 
                   var newThesises = [ ...state.thesises.thesises]
