@@ -25,7 +25,8 @@ const thesisSchema = mongoose.Schema({
         default : "A thesis from user"
     },
     userid : {
-        type : mongoose.SchemaTypes.ObjectId, ref : "User"
+        type : mongoose.SchemaTypes.ObjectId, ref : "User" ,
+        unique : true
     }
 })
 

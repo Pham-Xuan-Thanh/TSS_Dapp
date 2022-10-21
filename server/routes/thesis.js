@@ -340,12 +340,13 @@ router.post("/:thesisid/publishchapter/:chapterid", auth,
         var chapter = req.chapter || {}
         Thesis.findOne({ userid: req.user.id, _id: req.params.thesisid }, (error, thesis) => {
             var chaptermge = thesis.chapters.id(req.params.chapterid)
+            if ( !chapter.filehash_enc ) {
             console.log("req " , req.body.tx.tx_ipfs[0].ipfs_enc , req.body.tx.tx_ipfs[0].exp )
             // chapter.filehash = req.ipfsInfo.cid
             chapter.filehash_enc = req.body.tx.tx_ipfs[0].ipfs_enc
             chapter.expiredAt = req.body.tx.tx_ipfs[0].exp
             chapter.publishat = Date.now()
-            chaptermge.set(chapter)
+            chaptermge.set(chapter)}
             // chaptermge.save()
             console.log("chapter khi ppublish:", chapter)
             

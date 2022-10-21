@@ -73,7 +73,7 @@ router.post("/getbalance", auth, async (req, res, next) => {
                             {if (req.fileOwned.includes(chapter.filehash_enc)) {
                                 chapter.isPublish = true 
                             } else {
-                                    chapter.expiredAt = 0
+                                    // chapter.expiredAt = 0
                                 if (new Date() - new Date(chapter.publishat) > 60000) {
                                     chapter.publishat = 0
                                 }
