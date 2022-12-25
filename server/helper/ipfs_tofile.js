@@ -28,7 +28,7 @@ async function ipfsAddFile(path= "")
     var filecontent =  await fsPromises.readFile(path).catch( err => error  = err)
     if (error ) return [error,null]
     try {
-        const fileAdded = await ipfsClient.add({path,content : filecontent})
+        const fileAdded = await ipfsClient.add({content : filecontent})
     return [null,fileAdded]
 
     } catch(err) {
